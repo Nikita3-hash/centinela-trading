@@ -21,7 +21,10 @@
     const response=await fetch(config.url+path,{method,cache:'no-store',signal:AbortSignal.timeout(15000),
       headers:{Authorization:'Bearer '+config.token,...(body?{'Content-Type':'application/json'}:{})},
       body:body?JSON.stringify(body):undefined});
-    if(!response.ok)throw Error(response.status===401?'Conexión no autorizada: vuelve a conectar':response.status===503?'El servicio todavía no está activado':'El servicio no responde (HTTP '+response.status+')');
+    if(!response.ok){
+      let detail='';try{const output=await response.json();if(typeof output.error==='string')detail=output.error.slice(0,250)}catch{}
+      throw Error(response.status===401?'Conexión no autorizada: vuelve a conectar':response.status===503?'El servicio todavía no está activado':detail||'El servicio no responde (HTTP '+response.status+')');
+    }
     return response.json();
   }
   const time=value=>new Date(value).toLocaleString('es-ES');

@@ -44,10 +44,19 @@ export async function sendPush(endpoint, env, fetcher = fetch) {
   if (!validEndpoint(endpoint)) throw Error('Unsupported push service');
   // An empty push contains no personal payload. The service worker displays a
   // visible generic notice immediately, then fetches the protected alert feed.
-  const response = await fetcher(endpoint, {method:'POST',redirect:'error', headers:{
-    Authorization:await vapidAuthorization(endpoint, env), TTL:'300', Urgency:'normal'}});
+  const response = await fetcher(endpoint, {method:'POST',redirect:'error',
+    body:new Uint8Array(0), signal:AbortSignal.timeout(10000), headers:{
+    Authorization:await vapidAuthorization(endpoint, env), TTL:'300', Urgency:'normal',
+    'Content-Length':'0'}});
   if ([404,410].includes(response.status)) return 'expired';
-  if (!response.ok) throw Error('Push delivery failed: HTTP ' + response.status);
+  if (!response.ok) {
+    let reason='';
+    const known=new Set(['BadJwtToken','BadTtl','BadWebPushRequest','BadWebPushTopic',
+      'VapidPkHashMismatch','ExpiredToken','Forbidden','TooManyRequests','InternalServerError','ServiceUnavailable']);
+    try {const reply=await response.json();if(known.has(reply.reason))reason=' · '+reply.reason;} catch {}
+    const error=Error('El servicio de notificaciones rechazó el envío (HTTP '+response.status+reason+').');
+    error.pushDelivery=true;throw error;
+  }
   return 'accepted'; // Acceptance by the push service is not proof of iPhone delivery.
 }
 async function smallJSON(request) {
@@ -192,7 +201,16 @@ export class QuoteHub {
         alerts.push({id:crypto.randomUUID(),type:'test',message:'Prueba de notificaciones de Centinela',
           quoted_at:now,created_at:now});
         await this.ctx.storage.put('alerts',alerts.slice(-50));
-        const status=await sendPush(sub.endpoint,this.env);return json({status});
+        try {
+          const status=await sendPush(sub.endpoint,this.env);
+          await this.ctx.storage.put('last_push_status',status==='accepted'?
+            'Prueba aceptada; recepción en el dispositivo no comprobada':'Registro del dispositivo caducado');
+          return json({status});
+        } catch(error) {
+          const message=error.pushDelivery?error.message:'No se pudo contactar con el servicio de notificaciones. Vuelve a intentarlo.';
+          await this.ctx.storage.put('last_push_status',message);
+          return json({error:message},502);
+        }
       }
       return json({error:'Not found'},404);
     } catch {return json({error:'No se pudo completar la solicitud; comprueba la conexión y la configuración'},400);}

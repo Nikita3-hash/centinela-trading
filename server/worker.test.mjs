@@ -85,8 +85,15 @@ test('VAPID JWT has a valid signature and a restricted audience',async()=>{
   const claims=JSON.parse(Buffer.from(pieces[1],'base64url'));
   assert.equal(claims.aud,'https://web.push.apple.com');assert.ok(claims.exp> Date.now()/1000);
   assert.equal(await webcrypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},keys.publicKey,Buffer.from(pieces[2],'base64url'),new TextEncoder().encode(pieces[0]+'.'+pieces[1])),true);
-  assert.equal(await sendPush('https://web.push.apple.com/test',config,async()=>new Response(null,{status:201})),'accepted');
+  assert.equal(await sendPush('https://web.push.apple.com/test',config,async(url,options)=>{
+    assert.equal(options.headers['Content-Length'],'0');assert.equal(options.body.byteLength,0);
+    assert.ok(options.signal);return new Response(null,{status:201});}),'accepted');
   assert.equal(await sendPush('https://web.push.apple.com/test',config,async()=>new Response(null,{status:410})),'expired');
+  await assert.rejects(sendPush('https://web.push.apple.com/test',config,async()=>
+    new Response('{"reason":"BadWebPushRequest"}',{status:400})),/HTTP 400 · BadWebPushRequest/);
+  await assert.rejects(sendPush('https://web.push.apple.com/test',config,async()=>
+    new Response('{"reason":"private-provider-secret"}',{status:403})),error=>
+      error.message.includes('HTTP 403')&&!error.message.includes('private-provider-secret'));
 });
 test('rules persist and can be deleted; unknown devices cannot request test notifications',async()=>{
   const storage=store(),hub=new QuoteHub({storage},env());
