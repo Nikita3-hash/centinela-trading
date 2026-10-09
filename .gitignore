@@ -3,4 +3,5 @@
 .env*
 .wrangler/
 node_modules/
+.worker-build/
 __pycache__/

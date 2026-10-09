@@ -32,12 +32,19 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
       - name: Probar validación y fallo sin datos
         run: python -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Probar conexión privada y avisos
         run: node --test server/worker.test.mjs
       - name: Probar visualización de precios recientes y antiguos
         run: node scripts/test_live.cjs
+      - name: Comprobar que el servicio se puede empaquetar para Cloudflare
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx --yes wrangler@4.149.0 deploy --dry-run --cwd server --outdir ../.worker-build
       - name: Obtener cierres históricos
         run: python scripts/update.py
       - name: Validar archivo nuevo antes de publicar
