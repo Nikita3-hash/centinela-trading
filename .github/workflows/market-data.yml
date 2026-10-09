@@ -1,0 +1,28 @@
+name: Actualizar datos de Centinela
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '25 7,12,17,22 * * 1-5'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Obtener cotizaciones históricas
+        run: python scripts/update.py
+      - name: Guardar datos si cambiaron
+        run: |
+          if [ -f market-data.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add market-data.json
+            if ! git diff --cached --quiet; then
+              git commit -m "Actualizar cotizaciones diarias"
+              git push
+            fi
+          fi
