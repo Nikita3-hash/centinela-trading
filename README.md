@@ -1,8 +1,16 @@
-# Centinela v0.6
+# Centinela v0.7
 
 ## Objetivo principal
 
 Recibir avisos claros de compra y venta en el mercado financiero. Cada aviso debe tener un motivo comprensible y una hora visible. El usuario decide y realiza las operaciones por su cuenta.
+
+## Herramienta para operaciones de pocos días
+
+El usuario quiere estudiar operaciones que se mantengan unos días. La herramienta experimental selecciona hasta tres valores de la lista actual con cambio positivo en cinco sesiones, cierre sobre la media de veinte sesiones y volumen medio de las últimas cinco sesiones al menos un 20% superior al de las veinte sesiones anteriores. Se ordenan por aumento de volumen, no por rentabilidad prevista. Si no se cumplen las condiciones no se muestra una oportunidad forzada.
+
+La herramienta usa cierres diarios, descarta fechas de más de cinco días y archivos de más de 48 horas. No envía avisos automáticos de compra o venta ni constituye una estrategia de rentabilidad validada. El cambio diario absoluto medio es descriptivo, no una previsión.
+
+El comparador calcula dos escenarios hipotéticos en EUR (subida y bajada), descontando gastos totales introducidos por el usuario. El importe excluye dichos gastos, se supone cambio de divisa constante y no se calculan impuestos. Las entradas no se guardan ni se envían. Las reglas, el cálculo, la ausencia de volumen y los datos antiguos tienen comprobaciones automáticas.
 
 ## Estado actual
 

@@ -50,5 +50,17 @@ async function render(payload, status = 200) {
   assert.match(result.elements.source.textContent, /HTTP 404/);
   assert.equal(result.elements.reload.disabled, false);
   assert.equal(vm.runInContext('esc("a\\\'b")', result.context), 'a&#39;b');
+  const scenario=vm.runInContext('shortScenario(100,5,2)',result.context);
+  assert.equal(scenario.up,3);assert.equal(scenario.down,-7);assert.equal(scenario.breakEven,2);
+  for(const expression of ['shortScenario(0,5,2)','shortScenario(100,0,2)','shortScenario(100,101,2)','shortScenario(100,5,-1)','shortScenario(NaN,5,2)'])
+    assert.equal(vm.runInContext(expression,result.context),null);
+  result.context.sample={date:new Date().toISOString().slice(0,10),symbol:'TEST.US',change5:2,close:154,ma20:140,
+    rows:Array.from({length:55},(_,i)=>({close:100+i,volume:i<50?100:200}))};
+  assert.equal(vm.runInContext('shortSelection([sample]).length',result.context),1);
+  assert.equal(vm.runInContext('shortMetrics(sample).volumeRatio',result.context),2);
+  assert.equal(vm.runInContext('shortSelection([{...sample,change5:-2}]).length',result.context),0);
+  assert.equal(vm.runInContext('shortSelection([{...sample,ma20:200}]).length',result.context),0);
+  assert.equal(vm.runInContext("shortSelection([{...sample,date:'2000-01-01'}]).length",result.context),0);
+  assert.equal(vm.runInContext('shortSelection([{...sample,rows:sample.rows.map(r=>({...r,volume:0}))}]).length',result.context),0);
   console.log('Frontend: carga, filtros, detalle, cobertura parcial y 9 casos de error verificados');
 })().catch(error => {console.error(error); process.exitCode = 1});
