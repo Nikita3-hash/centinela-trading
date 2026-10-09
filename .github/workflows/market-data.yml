@@ -1,28 +1,82 @@
 name: Actualizar datos de Centinela
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'index.html'
+      - '.github/workflows/market-data.yml'
   schedule:
     - cron: '25 7,12,17,22 * * 1-5'
 permissions:
-  contents: write
+  contents: read
+concurrency:
+  group: centinela-pages
+  cancel-in-progress: false
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Obtener cotizaciones históricas
+      - name: Probar validación y fallo sin datos
+        run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Obtener cierres históricos
         run: python scripts/update.py
-      - name: Guardar datos si cambiaron
+      - name: Validar archivo nuevo antes de publicar
+        run: python scripts/update.py --validate market-data.json
+      - name: Probar visualización y estados de error
+        run: node scripts/test_frontend.cjs
+      - name: Resumir cobertura
         run: |
-          if [ -f market-data.json ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add market-data.json
-            if ! git diff --cached --quiet; then
-              git commit -m "Actualizar cotizaciones diarias"
-              git push
-            fi
+          python - <<'PY'
+          import json, os
+          data = json.load(open('market-data.json'))
+          summary = f"## Cotizaciones\n{len(data['assets'])}/{data['expected_assets']} activos válidos.\n"
+          summary += f"Fuente: {data['source']}\n\n"
+          summary += '\n'.join('- ' + error for error in data['errors'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+              output.write(summary)
+          if data['errors']:
+              print('::warning::Cobertura parcial; consultar el resumen y la página')
+          PY
+      - name: Guardar cotizaciones válidas
+        run: |
+          set -euo pipefail
+          test -s market-data.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market-data.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Actualizar cierres diarios"
+            git push origin HEAD:main
           fi
+      - name: Preparar sitio con el archivo recién validado
+        run: |
+          mkdir -p _site
+          cp index.html market-data.json _site/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+  deploy:
+    needs: refresh
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar datos y frontend juntos en Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
