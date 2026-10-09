@@ -1,6 +1,14 @@
-# Centinela Trading v0.4 beta
+# Centinela Trading v0.5 beta
 
 Prototipo educativo para iPhone (GitHub Pages). **No ejecuta operaciones, no tiene acceso a Trade Republic y no solicita contraseñas.**
+
+## Precios durante la sesión y avisos
+
+La v0.5 añade consulta cada minuto de una fuente configurada, hora de cada precio y avisos a niveles elegidos por el propietario. **Esta parte queda pendiente de activación del servicio personal y del proveedor; el radar diario sigue disponible.** No se presenta la frecuencia de consulta como garantía de tiempo real y no se disparan alertas con cotizaciones de más de 120 segundos. Los criterios técnicos siguen usando cierres diarios.
+
+El servicio en `server/` mantiene la clave del proveedor fuera de Pages y GitHub, exige acceso privado y consulta las reglas incluso con la app cerrada. El iPhone debe permitir notificaciones desde la app añadida a la pantalla de inicio. La recepción real se comprueba con «Enviar aviso de prueba»; la aceptación del envío no demuestra recepción.
+
+Configuración, fuentes oficiales y comprobaciones pendientes: [server/README.md](server/README.md). No se han creado cuentas, contratado planes ni configurado claves de proveedores. Las pruebas de esta integración utilizan respuestas simuladas.
 
 ## Qué hace
 - GitHub Actions descarga cierres históricos diarios públicos desde Yahoo Finance chart, sin claves. Se excluye la sesión del día actual en Nueva York para evitar precios parciales.

@@ -6,6 +6,11 @@ on:
     paths:
       - 'scripts/**'
       - 'index.html'
+      - 'live.js'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - 'icon.svg'
+      - 'server/**'
       - '.github/workflows/market-data.yml'
   schedule:
     - cron: '25 7,12,17,22 * * 1-5'
@@ -29,6 +34,10 @@ jobs:
           python-version: '3.12'
       - name: Probar validación y fallo sin datos
         run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Probar conexión privada y avisos
+        run: node --test server/worker.test.mjs
+      - name: Probar visualización de precios recientes y antiguos
+        run: node scripts/test_live.cjs
       - name: Obtener cierres históricos
         run: python scripts/update.py
       - name: Validar archivo nuevo antes de publicar
@@ -62,7 +71,7 @@ jobs:
       - name: Preparar sitio con el archivo recién validado
         run: |
           mkdir -p _site
-          cp index.html market-data.json _site/
+          cp index.html market-data.json live.js sw.js manifest.webmanifest icon.svg _site/
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:

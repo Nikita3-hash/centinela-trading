@@ -1,0 +1,12 @@
+{
+  "name": "centinela-personal",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-09",
+  "vars": {
+    "APP_ORIGIN": "https://nikita3-hash.github.io",
+    "VAPID_SUBJECT": "https://nikita3-hash.github.io/centinela-trading/"
+  },
+  "durable_objects": {"bindings": [{"name": "HUB", "class_name": "QuoteHub"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["QuoteHub"]}],
+  "triggers": {"crons": ["* * * * *"]}
+}
