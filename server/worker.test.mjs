@@ -87,8 +87,11 @@ test('VAPID JWT has a valid signature and a restricted audience',async()=>{
   assert.equal(await webcrypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},keys.publicKey,Buffer.from(pieces[2],'base64url'),new TextEncoder().encode(pieces[0]+'.'+pieces[1])),true);
   assert.equal(await sendPush('https://web.push.apple.com/test',config,async(url,options)=>{
     assert.equal(options.headers['Content-Length'],'0');assert.equal(options.body.byteLength,0);
+    assert.equal(options.redirect,'manual');
     assert.ok(options.signal);return new Response(null,{status:201});}),'accepted');
   assert.equal(await sendPush('https://web.push.apple.com/test',config,async()=>new Response(null,{status:410})),'expired');
+  await assert.rejects(sendPush('https://web.push.apple.com/test',config,async()=>
+    new Response(null,{status:302,headers:{Location:'https://evil.example/'}})),/HTTP 302/);
   await assert.rejects(sendPush('https://web.push.apple.com/test',config,async()=>
     new Response('{"reason":"BadWebPushRequest"}',{status:400})),/HTTP 400 · BadWebPushRequest/);
   await assert.rejects(sendPush('https://web.push.apple.com/test',config,async()=>

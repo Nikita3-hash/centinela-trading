@@ -50,7 +50,7 @@ export async function sendPush(endpoint, env, fetcher = fetch) {
   // An empty push contains no personal payload. The service worker displays a
   // visible generic notice immediately, then fetches the protected alert feed.
   let response;
-  try {response = await fetcher(endpoint, {method:'POST',redirect:'error',
+  try {response = await fetcher(endpoint, {method:'POST',redirect:'manual',
     body:new Uint8Array(0), signal:AbortSignal.timeout(10000), headers:{
     Authorization:authorization, TTL:'300', Urgency:'normal', 'Content-Length':'0'}});} catch(cause) {
     const error=Error('No se pudo contactar con el servicio de notificaciones ('+
