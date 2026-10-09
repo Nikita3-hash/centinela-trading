@@ -94,6 +94,17 @@ test('VAPID JWT has a valid signature and a restricted audience',async()=>{
   await assert.rejects(sendPush('https://web.push.apple.com/test',config,async()=>
     new Response('{"reason":"private-provider-secret"}',{status:403})),error=>
       error.message.includes('HTTP 403')&&!error.message.includes('private-provider-secret'));
+  const storage=store({subscriptions:[{endpoint:'https://web.push.apple.com/test'}]});
+  const hub=new QuoteHub({storage},{...env(),...config}),previousFetch=globalThis.fetch;
+  globalThis.fetch=async()=>new Response('{"reason":"BadWebPushRequest"}',{status:400});
+  try {
+    const response=await hub.fetch(new Request('https://internal/push-test',{method:'POST',body:JSON.stringify({registered_iphone:true})}));
+    assert.equal(response.status,502);assert.match((await response.json()).error,/BadWebPushRequest/);
+    assert.match(await storage.get('last_push_status'),/BadWebPushRequest/);
+    await storage.put('subscriptions',[{endpoint:'https://web.push.apple.com/a'},{endpoint:'https://web.push.apple.com/b'}]);
+    const ambiguous=await hub.fetch(new Request('https://internal/push-test',{method:'POST',body:JSON.stringify({registered_iphone:true})}));
+    assert.equal(ambiguous.status,400);
+  } finally {globalThis.fetch=previousFetch}
 });
 test('rules persist and can be deleted; unknown devices cannot request test notifications',async()=>{
   const storage=store(),hub=new QuoteHub({storage},env());

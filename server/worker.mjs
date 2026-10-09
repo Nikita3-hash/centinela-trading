@@ -42,12 +42,20 @@ export async function vapidAuthorization(endpoint, env) {
 }
 export async function sendPush(endpoint, env, fetcher = fetch) {
   if (!validEndpoint(endpoint)) throw Error('Unsupported push service');
+  let authorization;
+  try {authorization=await vapidAuthorization(endpoint,env)} catch(cause) {
+    const error=Error('No se pudo firmar el aviso ('+String(cause.name).replace(/[^A-Za-z]/g,'').slice(0,40)+').');
+    error.pushDelivery=true;throw error;
+  }
   // An empty push contains no personal payload. The service worker displays a
   // visible generic notice immediately, then fetches the protected alert feed.
-  const response = await fetcher(endpoint, {method:'POST',redirect:'error',
+  let response;
+  try {response = await fetcher(endpoint, {method:'POST',redirect:'error',
     body:new Uint8Array(0), signal:AbortSignal.timeout(10000), headers:{
-    Authorization:await vapidAuthorization(endpoint, env), TTL:'300', Urgency:'normal',
-    'Content-Length':'0'}});
+    Authorization:authorization, TTL:'300', Urgency:'normal', 'Content-Length':'0'}});} catch(cause) {
+    const error=Error('No se pudo contactar con el servicio de notificaciones ('+
+      String(cause.name).replace(/[^A-Za-z]/g,'').slice(0,40)+').');error.pushDelivery=true;throw error;
+  }
   if ([404,410].includes(response.status)) return 'expired';
   if (!response.ok) {
     let reason='';
@@ -165,7 +173,8 @@ export class QuoteHub {
       if (url.pathname==='/status' && method==='GET') return json({provider:'Finnhub',
         configured:true,push_ready:!!(this.env.VAPID_PRIVATE_JWK&&this.env.VAPID_PUBLIC_KEY&&this.env.VAPID_SUBJECT),
         public_key:this.env.VAPID_PUBLIC_KEY||null,delay_verified:false,
-        last_push_status:await this.ctx.storage.get('last_push_status')||'Todavía no se han enviado avisos'});
+        last_push_status:await this.ctx.storage.get('last_push_status')||'Todavía no se han enviado avisos',
+        signing_check:await vapidAuthorization('https://web.push.apple.com/check',this.env).then(()=> 'ok',error=>String(error.name).replace(/[^A-Za-z]/g,'').slice(0,40))});
       if (url.pathname==='/alerts' && method==='GET') return json({alerts:await this.ctx.storage.get('alerts')||[]});
       if (url.pathname==='/rules' && method==='GET') return json({rules:await this.ctx.storage.get('rules')||[]});
       if (url.pathname==='/rules' && method==='POST') {
@@ -196,6 +205,11 @@ export class QuoteHub {
       if (url.pathname==='/push-test' && method==='POST') {
         const sub=await smallJSON(request);
         const subs=await this.ctx.storage.get('subscriptions')||[];
+        if(sub.registered_iphone===true && !sub.endpoint) {
+          const iphones=subs.filter(s=>new URL(s.endpoint).hostname==='web.push.apple.com');
+          if(iphones.length!==1)return json({error:'La prueba remota requiere exactamente un iPhone registrado'},400);
+          sub.endpoint=iphones[0].endpoint;
+        }
         if (!subs.some(s=>s.endpoint===sub.endpoint)) return json({error:'Dispositivo no registrado'},400);
         const now=new Date().toISOString(), alerts=await this.ctx.storage.get('alerts')||[];
         alerts.push({id:crypto.randomUUID(),type:'test',message:'Prueba de notificaciones de Centinela',
