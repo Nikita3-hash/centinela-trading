@@ -20,7 +20,7 @@ async function render(payload, status = 200) {
   let result = await render(valid);
   assert.ok(result.elements.status.textContent.includes(`${valid.assets.length}/${valid.expected_assets} activos cargados`));
   assert.match(result.elements.source.textContent, /No son datos en tiempo real/);
-  assert.match(result.elements.assets.innerHTML, /Entender señal/);
+  assert.match(result.elements.assets.innerHTML, /Ver explicación/);
   assert.match(result.elements.detail.innerHTML, /Último cierre/);
   result.elements.filter.value = 'review';
   vm.runInContext('render()', result.context);
@@ -52,4 +52,3 @@ async function render(payload, status = 200) {
   assert.equal(vm.runInContext('esc("a\\\'b")', result.context), 'a&#39;b');
   console.log('Frontend: carga, filtros, detalle, cobertura parcial y 9 casos de error verificados');
 })().catch(error => {console.error(error); process.exitCode = 1});
-

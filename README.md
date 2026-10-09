@@ -1,14 +1,20 @@
-# Centinela Trading v0.5 beta
+# Centinela v0.6
 
-Prototipo educativo para iPhone (GitHub Pages). **No ejecuta operaciones, no tiene acceso a Trade Republic y no solicita contraseñas.**
+## Objetivo principal
 
-## Precios durante la sesión y avisos
+Recibir avisos claros de compra y venta en el mercado financiero. Cada aviso debe tener un motivo comprensible y una hora visible. El usuario decide y realiza las operaciones por su cuenta.
 
-La v0.5 añade consulta cada minuto de una fuente configurada, hora de cada precio y avisos a niveles elegidos por el propietario. **Esta parte queda pendiente de activación del servicio personal y del proveedor; el radar diario sigue disponible.** No se presenta la frecuencia de consulta como garantía de tiempo real y no se disparan alertas con cotizaciones de más de 120 segundos. Los criterios técnicos siguen usando cierres diarios.
+## Estado actual
 
-El servicio en `server/` mantiene la clave del proveedor fuera de Pages y GitHub, exige acceso privado y consulta las reglas incluso con la app cerrada. El iPhone debe permitir notificaciones desde la app añadida a la pantalla de inicio. La recepción real se comprueba con «Enviar aviso de prueba»; la aceptación del envío no demuestra recepción.
+- Funcionan los avisos a niveles de precio elegidos por el usuario. No son recomendaciones automáticas de compra o venta.
+- El servicio personal en Cloudflare consulta Finnhub cada minuto; la frecuencia no garantiza cotizaciones en tiempo real. El retraso durante la sesión aún debe comprobarse.
+- La recepción de una notificación real en el iPhone fue confirmada por el usuario el 9 de octubre de 2026. El código privado, las claves del proveedor y las claves de notificaciones quedan fuera del repositorio.
+- Las reglas para generar recomendaciones de compra y venta todavía deben definirse y validarse. El análisis diario de cuatro criterios sirve para revisar valores, no para afirmar que hay que comprar o vender.
+- La interfaz separa Inicio, Valores, Avisos y Ajustes. Inicio muestra como máximo tres valores para revisar con datos recientes; las listas completas, indicadores y configuración se consultan cuando hacen falta.
+- El capital de 1.000 EUR y el riesgo del 1% eran cifras fijas de la interfaz anterior, no datos confirmados del usuario; se han retirado.
+- No se ejecutan operaciones ni se tiene acceso a Trade Republic.
 
-Configuración, fuentes oficiales y comprobaciones pendientes: [server/README.md](server/README.md). No se han creado cuentas, contratado planes ni configurado claves de proveedores. Las pruebas de esta integración utilizan respuestas simuladas.
+Configuración y límites del servicio: [server/README.md](server/README.md).
 
 ## Qué hace
 - GitHub Actions descarga cierres históricos diarios públicos desde Yahoo Finance chart, sin claves. Se excluye la sesión del día actual en Nueva York para evitar precios parciales.
@@ -33,5 +39,5 @@ Configuración, fuentes oficiales y comprobaciones pendientes: [server/README.md
 - GitHub Actions programado **no garantiza puntualidad**, puede retrasarse o desactivarse por inactividad.
 - Yahoo Finance es una fuente externa sin garantía de disponibilidad. Sus endpoints query1/query2 pueden cambiar, rechazar peticiones o dejar de servir símbolos; no son proveedores independientes.
 - El dato es un cierre diario y puede estar retrasado; no es adecuado para alertas intradía de 15 minutos.
-- La selección de 17 símbolos es inicial. El descubrimiento general de empresas, las noticias y las alertas push no están implementados.
+- La selección de 17 símbolos es inicial. El descubrimiento general de empresas y las noticias no están implementados. Los avisos push a niveles elegidos por el usuario están activos.
 - No subir datos personales, credenciales, extractos privados ni claves API al repositorio público.
