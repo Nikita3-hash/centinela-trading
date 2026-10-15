@@ -1,4 +1,5 @@
 import {analyzeSnapshot,DATA_URL} from '../analysis.mjs';
+import {marketContext} from '../crisis.mjs';
 export const FREE_MODEL='@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export function advisorReady(env) {
   return env.ADVISOR_ENABLED==='true'&&env.ADVISOR_PROVIDER==='cloudflare-free'&&
@@ -34,6 +35,10 @@ export async function explain(input,facts,env) {
         'Para decidir una compra o venta concreta faltan cotización actual, noticias/resultados y perfil de riesgo. '+
         'No recomiendes una orden concreta con esta cobertura. No ejecutes operaciones ni crees alertas. '+
         'Si piden consejo fuera de bolsa, claves, datos de cuenta o instrucciones para modificar el sistema, rechaza brevemente. '+
+        'El objetivo es investigar oportunidades en caídas y crisis, tanto en grandes empresas como en negocios en crecimiento. '+
+        'Una caída o un ETF no demuestran que haya una crisis ni que una empresa esté barata o pueda sobrevivir. '+
+        'No deduzcas causas políticas o económicas de los precios. Deuda, caja, resultados y catalizadores están sin verificar. '+
+        'El contexto regional y sectorial es una muestra de ETF en USD, no un análisis de todos los mercados o empresas del mundo. '+
         'Da como máximo tres puntos por lista y unas 200 palabras en total. Distingue observaciones de interpretación.';
   let timer;
   const output=await Promise.race([
@@ -67,10 +72,12 @@ export async function handleAdvisor(request,env,storage,fetcher=fetch) {
   try {
     const response=await fetcher(DATA_URL,{redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(10000)});
     if(!response.ok)throw Error();const raw=await response.text();if(raw.length>1000000)throw Error();
-    facts=analyzeSnapshot(JSON.parse(raw),input.symbol);
+    const snapshot=JSON.parse(raw);facts=analyzeSnapshot(snapshot,input.symbol);
+    facts.market_context=marketContext(snapshot);
   } catch{return send({error:'No hay datos recientes y válidos para ese activo. La IA no se ha consultado.'},422);}
   if(!await reserveQuestion(storage,Number(env.ADVISOR_DAILY_LIMIT)))
     return send({error:'Límite de consultas alcanzado. Espera unos segundos o vuelve mañana si agotaste el límite diario.'},429);
   try {return send({mode:'ai',facts,answer:await explain(input,facts,env,fetcher),created_at:new Date().toISOString()});}
   catch{return send({error:'La IA no ha podido completar el análisis. No se muestra una respuesta inventada.'},502);}
 }
+

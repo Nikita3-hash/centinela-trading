@@ -1,8 +1,21 @@
-# Centinela v0.8
+# Centinela v0.9
+
+## Radar de caídas y contexto internacional
+
+El objetivo se amplía a investigar oportunidades que puedan aparecer en crisis y caídas, antes de sugerir entradas. La nueva pantalla principal calcula un radar sin IA con **25 activos: 17 empresas y ocho ETF de referencia**. No se analizan todas las empresas ni todas las bolsas del mundo.
+
+Las cuatro referencias regionales son SPY (S&P 500), EZU (eurozona), EWJ (Japón) y EEM (mercados emergentes); los sectores de EE. UU. se observan mediante XLK, XLF, XLE y XLV. Son precios de ETF en USD con cierres estadounidenses, no índices locales ni análisis macroeconómico directo. Sus fichas enlazan a los emisores. Los cambios son de precio, sin dividendos y sin conversión a EUR.
+
+Una empresa entra en la lista de investigación si su precio cae al menos un 15% desde el máximo de hasta 60 sesiones o un 8% en cinco sesiones. Se cuentan todas las que cumplen y se muestran como máximo tres, ordenadas por caída. Son umbrales experimentales sin validación de rentabilidad. Nunca se presentan como acciones baratas, empresas solventes o entradas recomendadas. La coincidencia de cambio positivo a cinco sesiones y cierre sobre su media de veinte solo describe una recuperación parcial del precio.
+
+Antes de valorar una entrada siguen pendientes tres etapas: contrastar la causa con noticias y fuentes, comprobar caja/deuda/resultados y validar precio actual, condiciones de salida y pérdida asumible. No hay datos para cumplirlas automáticamente todavía. La IA permanece sin desplegar ni activar. El contexto de ocho referencias se ha añadido a su código, con cobertura y límites explícitos, sin atribuir causalidad a los movimientos de precios. No se envían avisos nuevos.
+
+Los datos inválidos o de fecha distinta al cierre más reciente quedan fuera de las comparaciones, se declara la cobertura y se rechazan archivos antiguos. Las pruebas verifican umbrales, falta de datos, fechas desalineadas, separación de ETF y empresas y ausencia de señales de compra. Las pruebas del modelo siguen siendo simuladas.
+
 
 ## Consulta de activos y plan personal
 
-La pantalla principal permite consultar un activo por nombre o símbolo y ver una ficha calculada sin IA: cierre en USD, fecha, cambio de cinco sesiones, media de veinte sesiones y volumen. Los cálculos se recomputan a partir del historial validado; se rechazan archivos de más de 48 horas, cierres de más de cinco días, fechas duplicadas, sesiones sin completar y precios o volúmenes inválidos. La cobertura diaria incorpora MP Materials (18 activos). Los avisos privados siguen limitados a sus 17 valores originales.
+La pantalla de consulta permite consultar un activo por nombre o símbolo y ver una ficha calculada sin IA: cierre en USD, fecha, cambio de cinco sesiones, media de veinte sesiones y volumen. Los cálculos se recomputan a partir del historial validado; se rechazan archivos de más de 48 horas, cierres de más de cinco días, fechas duplicadas, sesiones sin completar y precios o volúmenes inválidos. La cobertura diaria incorpora MP Materials y siete ETF adicionales (25 activos). Los avisos privados siguen limitados a sus 17 valores originales.
 
 El plan de aportaciones, plazo y pérdida aceptable solo se guarda en este dispositivo mediante una acción explícita. Puede borrarse. No se envía al servidor ni al modelo y todavía no personaliza el análisis. El comparador de escenarios y los avisos anteriores siguen disponibles.
 
@@ -40,7 +53,7 @@ Configuración y límites del servicio: [server/README.md](server/README.md).
 
 ## Qué hace
 - GitHub Actions descarga cierres históricos diarios públicos desde Yahoo Finance chart, sin claves. Se excluye la sesión del día actual en Nueva York para evitar precios parciales.
-- Analiza una **lista predefinida de 18 activos estadounidenses**, no todo el mercado. Las cotizaciones están en USD.
+- Analiza una **lista predefinida de 25 activos cotizados en EE. UU.**, no todo el mercado. Las cotizaciones están en USD.
 - Muestra puntuación de 0 a 4 basada en indicadores técnicos básicos. **No es una señal validada de compra**.
 - Si el proveedor falla, no inventa cotizaciones. Muestra la fecha de los datos y advierte sobre datos antiguos.
 
@@ -61,6 +74,7 @@ Configuración y límites del servicio: [server/README.md](server/README.md).
 - GitHub Actions programado **no garantiza puntualidad**, puede retrasarse o desactivarse por inactividad.
 - Yahoo Finance es una fuente externa sin garantía de disponibilidad. Sus endpoints query1/query2 pueden cambiar, rechazar peticiones o dejar de servir símbolos; no son proveedores independientes.
 - El dato es un cierre diario y puede estar retrasado; no es adecuado para alertas intradía de 15 minutos.
-- La selección de 18 símbolos es inicial. El descubrimiento general de empresas y las noticias no están implementados. Los avisos push a niveles elegidos por el usuario están activos.
+- La selección de 25 símbolos es inicial. El descubrimiento general de empresas y las noticias no están implementados. Los avisos push a niveles elegidos por el usuario están activos.
 - No subir datos personales, credenciales, extractos privados ni claves API al repositorio público.
+
 

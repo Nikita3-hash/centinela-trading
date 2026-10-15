@@ -21,6 +21,13 @@ ASSETS = {
     'IONQ.US': ('IonQ', 'USD'), 'CRWD.US': ('CrowdStrike', 'USD'),
     'SPY.US': ('SPDR S&P 500 ETF', 'USD'),
     'MP.US': ('MP Materials', 'USD'),
+    'EZU.US': ('iShares MSCI Eurozone ETF', 'USD'),
+    'EWJ.US': ('iShares MSCI Japan ETF', 'USD'),
+    'EEM.US': ('iShares MSCI Emerging Markets ETF', 'USD'),
+    'XLK.US': ('State Street Technology Select Sector SPDR ETF', 'USD'),
+    'XLF.US': ('State Street Financial Select Sector SPDR ETF', 'USD'),
+    'XLE.US': ('State Street Energy Select Sector SPDR ETF', 'USD'),
+    'XLV.US': ('State Street Health Care Select Sector SPDR ETF', 'USD'),
 }
 OUTPUT = Path(__file__).resolve().parent.parent / 'market-data.json'
 MAX_AGE_DAYS = 7
@@ -181,3 +188,4 @@ if __name__ == '__main__':
         print('Archivo de cotizaciones validado')
     else:
         sys.exit(main())
+
