@@ -2,7 +2,12 @@
   "name": "centinela-personal",
   "main": "worker.mjs",
   "compatibility_date": "2026-10-09",
+  "ai": {"binding": "AI"},
   "vars": {
+    "ADVISOR_ENABLED": "false",
+    "ADVISOR_PROVIDER": "cloudflare-free",
+    "ADVISOR_FREE_PLAN_VERIFIED": "false",
+    "ADVISOR_DAILY_LIMIT": "5",
     "APP_ORIGIN": "https://nikita3-hash.github.io",
     "VAPID_SUBJECT": "https://nikita3-hash.github.io/centinela-trading/"
   },
