@@ -1,4 +1,5 @@
 /* Private personal-use quote relay and price alerts. Never sends trade orders. */
+import {handleAdvisor} from './advisor.mjs';
 export const SYMBOLS = ['NVDA','AAPL','MSFT','AMD','AMZN','GOOGL','META','TSLA','AVGO','PLTR','SOFI','RKLB','HIMS','HOOD','IONQ','CRWD','SPY'];
 const FRESH_SECONDS = 120;
 export const json = (value, status = 200, headers = {}) => new Response(JSON.stringify(value), {
@@ -91,7 +92,7 @@ export default {
       return json({error:'Service not activated'},503,cors);
     if (!await equalSecret(request.headers.get('Authorization'), 'Bearer '+env.API_ACCESS_TOKEN))
       return json({error:'Unauthorized'},401,cors);
-    const allowed = ['/quotes','/rules','/alerts','/push','/push-test','/status'];
+    const allowed = ['/quotes','/rules','/alerts','/push','/push-test','/status','/advisor','/advisor/status'];
     const url = new URL(request.url);
     if (!allowed.includes(url.pathname)) return json({error:'Not found'},404,cors);
     const response = await env.HUB.get(env.HUB.idFromName('personal-owner')).fetch(request);
@@ -167,6 +168,7 @@ export class QuoteHub {
   async fetch(request) {
     const url=new URL(request.url), method=request.method;
     try {
+      if(url.pathname==='/advisor'||url.pathname==='/advisor/status')return await handleAdvisor(request,this.env,this.ctx.storage);
       if ((url.pathname==='/refresh' && method==='POST')||(url.pathname==='/quotes' && method==='GET')) {
         const result=await this.refresh();return json(result,result.assets.length?200:503);
       }

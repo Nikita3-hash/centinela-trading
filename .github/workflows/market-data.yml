@@ -7,6 +7,8 @@ on:
       - 'scripts/**'
       - 'index.html'
       - 'live.js'
+      - 'consult.js'
+      - 'analysis.mjs'
       - 'sw.js'
       - 'manifest.webmanifest'
       - 'icon.svg'
@@ -38,7 +40,7 @@ jobs:
       - name: Probar validación y fallo sin datos
         run: python -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Probar conexión privada y avisos
-        run: node --test server/worker.test.mjs
+        run: node --test server/worker.test.mjs server/advisor.test.mjs scripts/consult.test.mjs
       - name: Probar visualización de precios recientes y antiguos
         run: node scripts/test_live.cjs
       - name: Comprobar que el servicio se puede empaquetar para Cloudflare
@@ -78,7 +80,7 @@ jobs:
       - name: Preparar sitio con el archivo recién validado
         run: |
           mkdir -p _site
-          cp index.html market-data.json live.js sw.js manifest.webmanifest icon.svg _site/
+          cp index.html market-data.json live.js consult.js analysis.mjs sw.js manifest.webmanifest icon.svg _site/
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:
@@ -96,3 +98,4 @@ jobs:
       - name: Publicar datos y frontend juntos en Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

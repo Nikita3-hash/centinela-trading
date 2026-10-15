@@ -34,6 +34,9 @@ test('public requests do not expose quotes or provider secrets',async()=>{
   r=await worker.fetch(new Request('https://worker/quotes',{headers:{Authorization:'Bearer '+token,Origin:'https://nikita3-hash.github.io'}}),env());
   assert.equal(r.status,200);assert.equal(r.headers.get('Access-Control-Allow-Origin'),'https://nikita3-hash.github.io');
   r=await worker.fetch(new Request('https://worker/quotes'),{...env(),FINNHUB_API_KEY:null});assert.equal(r.status,503);
+  for(const path of ['/advisor','/advisor/status']){
+    r=await worker.fetch(new Request('https://worker'+path),env());assert.equal(r.status,401);
+  }
 });
 test('preflight works and the internal refresh endpoint cannot be called publicly',async()=>{
   const r=await worker.fetch(new Request('https://worker/quotes',{method:'OPTIONS',headers:{Origin:'https://nikita3-hash.github.io'}}),env());assert.equal(r.status,204);

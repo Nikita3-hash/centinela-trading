@@ -52,3 +52,16 @@ Fuentes oficiales:
 - https://developers.cloudflare.com/durable-objects/platform/pricing/
 - https://developers.cloudflare.com/workers/configuration/secrets/
 - https://developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers
+
+# Asistente opcional v0.8 — pendiente de activación
+
+El código añade `GET /advisor/status` y `POST /advisor`, protegidos por la autorización y origen existentes. La app publicada puede consultar fichas diarias sin este servicio; no lo presenta como IA funcionando.
+
+Para activar se requiere desplegar `worker.mjs` junto con `advisor.mjs` y el módulo compartido `../analysis.mjs`, manteniendo secretos, Durable Object y cron existentes. Configurar `OPENAI_API_KEY` como secreto en Cloudflare (nunca en Pages o GitHub), `ADVISOR_MODEL` con un modelo verificado que admita Responses API y salidas estructuradas, `ADVISOR_DAILY_LIMIT` entre 1 y 20 y `ADVISOR_ENABLED=true` únicamente tras autorizar el coste. Ninguno de estos valores está activado por defecto. No se ha desplegado esta ampliación del Worker desde esta sesión.
+
+La cuenta mantiene el límite diario en el Durable Object con una transacción, antes de contactar al modelo. Cada intento reservado consume el cupo aunque falle; no se reintenta automáticamente. Hay una separación mínima de 10 segundos entre intentos. Este control no es un límite monetario: se necesita también revisar precios y controles de gasto de la cuenta del proveedor antes de activar.
+
+El servidor vuelve a obtener el JSON público de una URL fija y valida el activo. Ignora datos financieros aportados por el cliente para calcular las métricas. La IA no dispone de herramientas, navegación ni ejecución de órdenes. No crea avisos, no recibe el plan local y no conserva conversaciones en el Durable Object. Sus instrucciones delimitan el análisis a cierres diarios y exigen declarar que no hay noticias, resultados, cambio de divisa ni cotización en directo verificados. Las instrucciones no garantizan la exactitud del texto generado; falta evaluar respuestas reales antes de considerarlo asesoramiento fiable.
+
+Comprobación pendiente tras activar: autorización/CORS, modelo real, cupo simultáneo, datos antiguos, indisponibilidad del proveedor y revisión humana de casos MP en EUR frente a cierre USD, preguntas con datos insuficientes e instrucciones maliciosas. No enviar una notificación de prueba al iPhone como parte de esta activación.
+

@@ -18,7 +18,7 @@
   })}
   async function api(path,method='GET',body){
     if(!config)throw Error('La conexión de precios todavía no está activada');
-    const response=await fetch(config.url+path,{method,cache:'no-store',signal:AbortSignal.timeout(15000),
+    const response=await fetch(config.url+path,{method,cache:'no-store',signal:AbortSignal.timeout(path==='/advisor'?40000:15000),
       headers:{Authorization:'Bearer '+config.token,...(body?{'Content-Type':'application/json'}:{})},
       body:body?JSON.stringify(body):undefined});
     if(!response.ok){
@@ -27,6 +27,8 @@
     }
     return response.json();
   }
+  // Keep owner credentials in this closure. Only these two assistant operations are exposed.
+  window.centinelaAdvisor={status:()=>api('/advisor/status'),ask:body=>api('/advisor','POST',body)};
   const time=value=>new Date(value).toLocaleString('es-ES');
   function renderQuotes(output){
     if(output.source!=='Finnhub'||!Array.isArray(output.assets)||!Array.isArray(output.errors)||

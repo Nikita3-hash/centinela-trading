@@ -20,6 +20,7 @@ ASSETS = {
     'HIMS.US': ('Hims & Hers', 'USD'), 'HOOD.US': ('Robinhood', 'USD'),
     'IONQ.US': ('IonQ', 'USD'), 'CRWD.US': ('CrowdStrike', 'USD'),
     'SPY.US': ('SPDR S&P 500 ETF', 'USD'),
+    'MP.US': ('MP Materials', 'USD'),
 }
 OUTPUT = Path(__file__).resolve().parent.parent / 'market-data.json'
 MAX_AGE_DAYS = 7

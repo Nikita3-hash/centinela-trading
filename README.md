@@ -1,4 +1,14 @@
-# Centinela v0.7
+# Centinela v0.8
+
+## Consulta de activos y plan personal
+
+La pantalla principal permite consultar un activo por nombre o símbolo y ver una ficha calculada sin IA: cierre en USD, fecha, cambio de cinco sesiones, media de veinte sesiones y volumen. Los cálculos se recomputan a partir del historial validado; se rechazan archivos de más de 48 horas, cierres de más de cinco días, fechas duplicadas, sesiones sin completar y precios o volúmenes inválidos. La cobertura diaria incorpora MP Materials (18 activos). Los avisos privados siguen limitados a sus 17 valores originales.
+
+El plan de aportaciones, plazo y pérdida aceptable solo se guarda en este dispositivo mediante una acción explícita. Puede borrarse. No se envía al servidor ni al modelo y todavía no personaliza el análisis. El comparador de escenarios y los avisos anteriores siguen disponibles.
+
+**La conversación con IA está preparada en código, pero pendiente de configurar, desplegar y verificar en Cloudflare.** No se ha activado un servicio de pago ni se ha probado una respuesta real de un modelo. Las pruebas de IA utilizan respuestas simuladas. No hay noticias o resultados empresariales conectados, conversión EUR/USD verificada, seguimiento de operaciones simuladas ni estrategia rentable demostrada. La primera versión ofrece consultas independientes, sin memoria conversacional.
+
+La conexión opcional usa Responses API con salida estructurada y `store:false`. Requiere una activación explícita, modelo configurado, clave privada y límite diario de 1–20 solicitudes. Las reservas se realizan en una transacción antes de llamar al modelo y también cuentan los intentos fallidos; máximo 1 solicitud cada 10 segundos, sin reintentos automáticos y salida limitada. Esto limita solicitudes, **no garantiza un presupuesto en euros**. La pregunta y los datos de mercado se envían a OpenAI solo al pulsar el botón correspondiente; no se registra el texto en el servicio. `store:false` no constituye por sí solo una promesa de retención cero del proveedor. El texto generado se trata como texto, nunca HTML.
 
 ## Objetivo principal
 
@@ -26,7 +36,7 @@ Configuración y límites del servicio: [server/README.md](server/README.md).
 
 ## Qué hace
 - GitHub Actions descarga cierres históricos diarios públicos desde Yahoo Finance chart, sin claves. Se excluye la sesión del día actual en Nueva York para evitar precios parciales.
-- Analiza una **lista predefinida de 17 activos estadounidenses**, no todo el mercado. Las cotizaciones están en USD.
+- Analiza una **lista predefinida de 18 activos estadounidenses**, no todo el mercado. Las cotizaciones están en USD.
 - Muestra puntuación de 0 a 4 basada en indicadores técnicos básicos. **No es una señal validada de compra**.
 - Si el proveedor falla, no inventa cotizaciones. Muestra la fecha de los datos y advierte sobre datos antiguos.
 
@@ -47,5 +57,6 @@ Configuración y límites del servicio: [server/README.md](server/README.md).
 - GitHub Actions programado **no garantiza puntualidad**, puede retrasarse o desactivarse por inactividad.
 - Yahoo Finance es una fuente externa sin garantía de disponibilidad. Sus endpoints query1/query2 pueden cambiar, rechazar peticiones o dejar de servir símbolos; no son proveedores independientes.
 - El dato es un cierre diario y puede estar retrasado; no es adecuado para alertas intradía de 15 minutos.
-- La selección de 17 símbolos es inicial. El descubrimiento general de empresas y las noticias no están implementados. Los avisos push a niveles elegidos por el usuario están activos.
+- La selección de 18 símbolos es inicial. El descubrimiento general de empresas y las noticias no están implementados. Los avisos push a niveles elegidos por el usuario están activos.
 - No subir datos personales, credenciales, extractos privados ni claves API al repositorio público.
+
